@@ -1,6 +1,7 @@
 #include "aiv_renderer.h"
 #include <stdlib.h>
-#include <SDL2/SDL.h>
+#define SDL_MAIN_HANDLED
+#include "sdl/SDL.h"
 
 #define triangle(x0, y0, z0, x1, y1, z1, x2, y2, z2) \
     Triangle_new(                                    \
