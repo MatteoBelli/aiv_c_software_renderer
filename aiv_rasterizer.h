@@ -1,33 +1,51 @@
 #include "aiv_math.h"
+#include <string.h>
 
-typedef struct Context
+typedef struct context
 {
     int width;
     int height;
 
     unsigned char *framebuffer;
+} context_t;
 
-} Context_t;
-
-typedef struct Vertex
+typedef struct color
 {
-    Vector3_t position;
-    Vector3_t normal;
-    Vector3_t color;
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    unsigned char a;
+} color_t;
+
+typedef struct vertex
+{
+    struct vector3 position;
+    struct vector3 normal;
+    struct color color;
 
     int raster_x;
     int raster_y;
-} Vertex_t;
+} vertex_t;
 
-Vertex_t Vertex_new(Vector3_t position);
-
-typedef struct Triangle
+typedef struct triangle
 {
-    Vertex_t a;
-    Vertex_t b;
-    Vertex_t c;
-} Triangle_t;
+    struct vertex a;
+    struct vertex b;
+    struct vertex c;
+} triangle_t;
 
-Triangle_t Triangle_new(Vertex_t a, Vertex_t b, Vertex_t c);
+context_t context_new(int width, int height);
+void clear_buffer(context_t *context, size_t size);
 
-void rasterize(Context_t *ctx, Triangle_t *triangle);
+color_t new_color(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+color_t color_red();
+color_t color_green();
+color_t color_blue();
+
+vertex_t vertex_new(vector3_t position);
+
+triangle_t triangle_new(vertex_t a, vertex_t b, vertex_t c);
+
+void put_pixel(vector2_t vertex_pos, context_t *context, color_t color);
+void draw_line(float start_y, float start_x, float end_x, float end_y, context_t *ctx);
+void rasterize(struct context *ctx, struct triangle *triangle);
