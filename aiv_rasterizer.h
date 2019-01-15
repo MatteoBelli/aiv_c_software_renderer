@@ -5,6 +5,7 @@ typedef struct context
 {
     int width;
     int height;
+    vector3_t camera;
 
     unsigned char *framebuffer;
 } context_t;

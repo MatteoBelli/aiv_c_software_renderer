@@ -5,6 +5,7 @@ context_t context_new(int width, int height)
     context_t context;
     context.width = 600;
     context.height = 600;
+    context.camera = vector3_zero();
     context.framebuffer = NULL;
     return context;
 }
@@ -81,9 +82,9 @@ void draw_line(float start_y, float start_x, float end_x, float end_y, context_t
 
 void rasterize(struct context *context, struct triangle *triangle)
 {
-    vector2_t vertex_a = point_to_screen(triangle->a.position.x, triangle->a.position.y, context->width, context->height);
-    vector2_t vertex_b = point_to_screen(triangle->b.position.x, triangle->b.position.y, context->width, context->height);
-    vector2_t vertex_c = point_to_screen(triangle->c.position.x, triangle->c.position.y, context->width, context->height);
+    vector2_t vertex_a = point_to_screen(triangle->a.position.x - context->camera.x, triangle->a.position.y - context->camera.y, context->width, context->height);
+    vector2_t vertex_b = point_to_screen(triangle->b.position.x - context->camera.x, triangle->b.position.y - context->camera.y, context->width, context->height);
+    vector2_t vertex_c = point_to_screen(triangle->c.position.x - context->camera.x, triangle->c.position.y - context->camera.y, context->width, context->height);
 
     vector2_t P[3] = {vertex_a, vertex_b, vertex_c};
 
