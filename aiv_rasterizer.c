@@ -115,9 +115,9 @@ void rasterize(context_t *context)
         update_vertex_position_with_camera(context, &triangle.b);
         update_vertex_position_with_camera(context, &triangle.c);
 
-        vector2_t vertex_a = point_to_screen(triangle.b.position.x /*- context->camera_position.x*/, triangle.a.position.y /*- context->camera_position.y*/, context->width, context->height);
-        vector2_t vertex_b = point_to_screen(triangle.b.position.x /*- context->camera_position.x*/, triangle.b.position.y /*- context->camera_position.y*/, context->width, context->height);
-        vector2_t vertex_c = point_to_screen(triangle.c.position.x /*- context->camera_position.x*/, triangle.c.position.y /*- context->camera_position.y*/, context->width, context->height);
+        vector2_t vertex_a = point_to_screen(triangle.b.position.x, triangle.a.position.y, context->width, context->height);
+        vector2_t vertex_b = point_to_screen(triangle.b.position.x, triangle.b.position.y, context->width, context->height);
+        vector2_t vertex_c = point_to_screen(triangle.c.position.x, triangle.c.position.y, context->width, context->height);
 
         vector2_t P[3] = {vertex_a, vertex_b, vertex_c};
 
@@ -209,15 +209,8 @@ void rasterize(context_t *context)
                 }
             }
         }
-
-        /*
-        draw_line(P[0].y, P[0].x, P[1].x, P[1].y, ctx);
-        draw_line(P[0].y, P[0].x, P[2].x, P[2].y, ctx);
-        draw_line(P[1].y, P[1].x, P[2].x, P[2].y, ctx);
-        */
     }
 }
-
 
 /*
 static void get_raster_value(context_t *context, vertex_t *vertex)

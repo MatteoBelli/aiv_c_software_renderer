@@ -13,10 +13,10 @@ int main(int argc, char const *argv[])
 {
     context_t context = context_new(600, 600);
 
-    //triangle_t triangle = triangle(0, 0.5, 0, 0, -0.5, 0, -0.5, 0, 0);
-    //add_triangle(&context, triangle);
+    triangle_t triangle = triangle(0, 0.5, 0, 0, -0.5, 0, -0.5, 0, 0);
+    add_triangle(&context, triangle);
 
-    triangle_t triangle = triangle(-0.9, 0.9, 0, -0.9, 0, 0, 0, 0.8, 0);
+    triangle = triangle(-0.9, 0.9, 0, -0.9, 0, 0, 0, 0.8, 0);
     add_triangle(&context, triangle);
 
     SDL_Init(SDL_INIT_VIDEO);
@@ -44,13 +44,13 @@ int main(int argc, char const *argv[])
             if (event.type == SDL_KEYDOWN)
             {
                 if (event.key.keysym.sym == SDLK_DOWN)
-                    context.camera.y += 0.1;
+                    context.camera_position.y += 0.1;
                 else if (event.key.keysym.sym == SDLK_UP)
-                    context.camera.y -= 0.1;
+                    context.camera_position.y -= 0.1;
                 else if (event.key.keysym.sym == SDLK_RIGHT)
-                    context.camera.x -= 0.1;
+                    context.camera_position.x -= 0.1;
                 else if (event.key.keysym.sym == SDLK_LEFT)
-                    context.camera.x += 0.1;
+                    context.camera_position.x += 0.1;
             }
         }
 
