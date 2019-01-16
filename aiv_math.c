@@ -45,11 +45,10 @@ float gradient(float i, float p0, float p1)
 
 vector2_t point_to_screen(float point_x, float point_y, int screen_width, int screen_height)
 {
-    vector2_t screen_point;
-    screen_point.x = ((point_x + 1) / 2) * screen_width;
-
-    screen_point.y = screen_height - (((point_y + 1) / 2) * screen_height);
-    return screen_point;
+    vector2_t out_pixel_point;
+    out_pixel_point.x = ((point_x + 1) / 2) * screen_width;
+    out_pixel_point.y = screen_height - (((point_y + 1) / 2) * screen_height);
+    return out_pixel_point;
 }
 
 vector2_t screen_to_point(float screen_point_x, float screen_point_y, int screen_width, int screen_height)

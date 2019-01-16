@@ -1,14 +1,7 @@
 #include "aiv_math.h"
+#include <stdlib.h>
 #include <string.h>
-
-typedef struct context
-{
-    int width;
-    int height;
-    vector3_t camera;
-
-    unsigned char *framebuffer;
-} context_t;
+#include <stdio.h>
 
 typedef struct color
 {
@@ -35,8 +28,17 @@ typedef struct triangle
     struct vertex c;
 } triangle_t;
 
-context_t context_new(int width, int height);
-void clear_buffer(context_t *context, size_t size);
+typedef struct context
+{
+    int width;
+    int height;
+    vector3_t camera;
+
+    unsigned char *framebuffer;
+
+    triangle_t *triangles;
+    size_t triangles_array_size;
+} context_t;
 
 color_t new_color(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 color_t color_red();
@@ -47,6 +49,10 @@ vertex_t vertex_new(vector3_t position);
 
 triangle_t triangle_new(vertex_t a, vertex_t b, vertex_t c);
 
+context_t context_new(int width, int height);
+void clear_buffer(context_t *context, size_t size);
+int add_triangle(context_t *context, triangle_t triangle);
+
 void put_pixel(vector2_t vertex_pos, context_t *context, color_t color);
 void draw_line(float start_y, float start_x, float end_x, float end_y, context_t *ctx);
-void rasterize(struct context *ctx, struct triangle *triangle);
+void rasterize(context_t *context);

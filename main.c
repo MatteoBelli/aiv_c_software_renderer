@@ -13,7 +13,11 @@ int main(int argc, char const *argv[])
 {
     context_t context = context_new(600, 600);
 
-    triangle_t triangle = triangle(0, 0.5, 0, 0, -0.5, 0, -0.5, 0, 0);
+    //triangle_t triangle = triangle(0, 0.5, 0, 0, -0.5, 0, -0.5, 0, 0);
+    //add_triangle(&context, triangle);
+
+    triangle_t triangle = triangle(-0.9, 0.9, 0, -0.9, 0, 0, 0, 0.8, 0);
+    add_triangle(&context, triangle);
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -52,7 +56,7 @@ int main(int argc, char const *argv[])
 
         int pitch;
         SDL_LockTexture(texture, NULL, (void **)&context.framebuffer, &pitch);
-        rasterize(&context, &triangle);
+        rasterize(&context);
         SDL_UnlockTexture(texture);
 
         SDL_RenderCopy(renderer, texture, NULL, NULL);

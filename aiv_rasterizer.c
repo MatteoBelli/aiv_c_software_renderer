@@ -1,20 +1,5 @@
 #include "aiv_rasterizer.h"
 
-context_t context_new(int width, int height)
-{
-    context_t context;
-    context.width = 600;
-    context.height = 600;
-    context.camera = vector3_zero();
-    context.framebuffer = NULL;
-    return context;
-}
-
-void clear_buffer(context_t *context, size_t size)
-{
-    memset(context->framebuffer, 0, size);
-}
-
 color_t new_color(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
     color_t color = {.r = r, .g = g, .b = b, .a = a};
@@ -53,6 +38,38 @@ triangle_t triangle_new(vertex_t a, vertex_t b, vertex_t c)
     return triangle;
 }
 
+context_t context_new(int width, int height)
+{
+    context_t context;
+    context.width = 600;
+    context.height = 600;
+    context.camera = vector3_zero();
+    context.framebuffer = NULL;
+    context.triangles = NULL;
+    context.triangles_array_size = 0;
+    return context;
+}
+
+void clear_buffer(context_t *context, size_t size)
+{
+    memset(context->framebuffer, 0, size);
+}
+
+int add_triangle(context_t *context, triangle_t triangle)
+{
+    context->triangles_array_size++;
+    void *resized_area = realloc(context->triangles, sizeof(triangle_t) * context->triangles_array_size);
+    if (!resized_area)
+    {
+        context->triangles_array_size--;
+        return -1;
+    }
+
+    context->triangles = (triangle_t *)resized_area;
+    context->triangles[context->triangles_array_size - 1] = triangle;
+    return 0;
+}
+
 void put_pixel(vector2_t vertex_pos, context_t *context, color_t color)
 {
     if (vertex_pos.x < 0 || vertex_pos.y < 0 || vertex_pos.x >= context->width || vertex_pos.y >= context->height)
@@ -80,66 +97,110 @@ void draw_line(float start_y, float start_x, float end_x, float end_y, context_t
     }
 }
 
-void rasterize(struct context *context, struct triangle *triangle)
+void rasterize(context_t *context)
 {
-    vector2_t vertex_a = point_to_screen(triangle->a.position.x - context->camera.x, triangle->a.position.y - context->camera.y, context->width, context->height);
-    vector2_t vertex_b = point_to_screen(triangle->b.position.x - context->camera.x, triangle->b.position.y - context->camera.y, context->width, context->height);
-    vector2_t vertex_c = point_to_screen(triangle->c.position.x - context->camera.x, triangle->c.position.y - context->camera.y, context->width, context->height);
-
-    vector2_t P[3] = {vertex_a, vertex_b, vertex_c};
-
-    vector2_t temp;
-
-    if (P[1].y < P[0].y)
+    for (int i = 0; i < context->triangles_array_size; i++)
     {
-        temp = P[0];
-        P[0] = P[1];
-        P[1] = temp;
-    }
-    if (P[2].y < P[1].y)
-    {
-        temp = P[2];
-        P[2] = P[1];
-        P[1] = temp;
-    }
-    if (P[1].y < P[0].y)
-    {
-        temp = P[0];
-        P[0] = P[1];
-        P[1] = temp;
-    }
+        triangle_t triangle = context->triangles[i];
+        vector2_t vertex_a = point_to_screen(triangle.b.position.x - context->camera.x, triangle.a.position.y - context->camera.y, context->width, context->height);
+        vector2_t vertex_b = point_to_screen(triangle.b.position.x - context->camera.x, triangle.b.position.y - context->camera.y, context->width, context->height);
+        vector2_t vertex_c = point_to_screen(triangle.c.position.x - context->camera.x, triangle.c.position.y - context->camera.y, context->width, context->height);
 
-    for (int y = P[0].y; y < P[1].y; y++)
-    {
-        float gradient_p0_p1 = gradient(y, P[0].y, P[1].y);
-        float start_x = lerp(P[0].x, P[1].x, gradient_p0_p1);
+        vector2_t P[3] = {vertex_a, vertex_b, vertex_c};
 
-        float gradient_p0_p2 = gradient(y, P[0].y, P[2].y);
-        float end_x = lerp(P[0].x, P[2].x, gradient_p0_p2);
-
-        for (int x = start_x; x <= end_x; x++)
+        vector2_t temp;
+        if (P[1].y < P[0].y)
         {
-            put_pixel(vector2_new(x, y), context, color_red());
+            temp = P[0];
+            P[0] = P[1];
+            P[1] = temp;
         }
-    }
-
-    for (int y = P[1].y; y < P[2].y; y++)
-    {
-        float gradient_p1_p2 = gradient(y, P[1].y, P[2].y);
-        float start_x = lerp(P[1].x, P[2].x, gradient_p1_p2);
-
-        float gradient_p0_p2 = gradient(y, P[0].y, P[2].y);
-        float end_x = lerp(P[0].x, P[2].x, gradient_p0_p2);
-
-        for (int x = start_x; x <= end_x; x++)
+        if (P[2].y < P[1].y)
         {
-            put_pixel(vector2_new(x, y), context, color_red());
+            temp = P[2];
+            P[2] = P[1];
+            P[1] = temp;
         }
-    }
+        if (P[1].y < P[0].y)
+        {
+            temp = P[0];
+            P[0] = P[1];
+            P[1] = temp;
+        }
 
-    /*
-    draw_line(P[0].y, P[0].x, P[1].x, P[1].y, ctx);
-    draw_line(P[0].y, P[0].x, P[2].x, P[2].y, ctx);
-    draw_line(P[1].y, P[1].x, P[2].x, P[2].y, ctx);
-    */
+        float slope_P0_P2;
+        if (P[2].y == P[0].y)
+        {
+            slope_P0_P2 = 1.0f;
+        }
+        else
+        {
+            slope_P0_P2 = inversed_slope(P[0].x, P[2].x, P[0].y, P[2].y);
+        }
+
+        float slope_P0_P1;
+        if (P[1].y == P[0].y)
+        {
+            slope_P0_P1 = 1.0f;
+        }
+        else
+        {
+            slope_P0_P1 = inversed_slope(P[0].x, P[1].x, P[0].y, P[1].y);
+        }
+
+        for (int y = P[0].y; y <= P[1].y; y++)
+        {
+
+            float gradient_p0_p1 = gradient(y, P[0].y, P[1].y);
+            float start_x = lerp(P[0].x, P[1].x, gradient_p0_p1);
+
+            float gradient_p0_p2 = gradient(y, P[0].y, P[2].y);
+            float end_x = lerp(P[0].x, P[2].x, gradient_p0_p2);
+
+            if (slope_P0_P1 <= slope_P0_P2)
+            {
+                for (int x = start_x; x <= end_x; x++)
+                {
+                    put_pixel(vector2_new(x, y), context, color_red());
+                }
+            }
+            else if (slope_P0_P1 > slope_P0_P2)
+            {
+                for (int x = end_x; x <= start_x; x++)
+                {
+                    put_pixel(vector2_new(x, y), context, color_red());
+                }
+            }
+        }
+
+        for (int y = P[1].y; y <= P[2].y; y++)
+        {
+            float gradient_p1_p2 = gradient(y, P[1].y, P[2].y);
+            float start_x = lerp(P[1].x, P[2].x, gradient_p1_p2);
+
+            float gradient_p0_p2 = gradient(y, P[0].y, P[2].y);
+            float end_x = lerp(P[0].x, P[2].x, gradient_p0_p2);
+
+            if (slope_P0_P1 <= slope_P0_P2)
+            {
+                for (int x = start_x; x <= end_x; x++)
+                {
+                    put_pixel(vector2_new(x, y), context, color_red());
+                }
+            }
+            else if (slope_P0_P1 > slope_P0_P2)
+            {
+                for (int x = end_x; x <= start_x; x++)
+                {
+                    put_pixel(vector2_new(x, y), context, color_red());
+                }
+            }
+        }
+
+        /*
+        draw_line(P[0].y, P[0].x, P[1].x, P[1].y, ctx);
+        draw_line(P[0].y, P[0].x, P[2].x, P[2].y, ctx);
+        draw_line(P[1].y, P[1].x, P[2].x, P[2].y, ctx);
+        */
+    }
 }
