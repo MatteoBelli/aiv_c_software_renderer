@@ -44,13 +44,18 @@ int main(int argc, char const *argv[])
             if (event.type == SDL_KEYDOWN)
             {
                 if (event.key.keysym.sym == SDLK_DOWN)
-                    context.camera_position.y += 0.1;
-                else if (event.key.keysym.sym == SDLK_UP)
                     context.camera_position.y -= 0.1;
+                else if (event.key.keysym.sym == SDLK_UP)
+                    context.camera_position.y += 0.1;
                 else if (event.key.keysym.sym == SDLK_RIGHT)
-                    context.camera_position.x -= 0.1;
-                else if (event.key.keysym.sym == SDLK_LEFT)
                     context.camera_position.x += 0.1;
+                else if (event.key.keysym.sym == SDLK_LEFT)
+                    context.camera_position.x -= 0.1;
+
+                if (event.key.keysym.sym == SDLK_w)
+                    context.camera_position.z -= 0.1;
+                else if (event.key.keysym.sym == SDLK_s)
+                    context.camera_position.z += 0.1;
             }
         }
 

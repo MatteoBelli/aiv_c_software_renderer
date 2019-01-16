@@ -43,7 +43,7 @@ context_t context_new(int width, int height)
     context_t context;
     context.width = 600;
     context.height = 600;
-    context.camera_position = vector3_zero();
+    context.camera_position = vector3_new(0, 0, 1);
     context.camera_fov = 60;
     context.framebuffer = NULL;
     context.triangles = NULL;
@@ -105,6 +105,20 @@ static void update_vertex_position_with_camera(context_t *context, vertex_t *ver
     vertex->position.z = vertex->position.z - context->camera_position.z;
 }
 
+static vector2_t get_raster_value(context_t *context, vertex_t *vertex)
+{
+    float fov = (60.0 / 2) * (3.1416 / 180);
+    float camera_distance = tan(fov);
+    float projected_x = vertex->position.x / (camera_distance * vertex->position.z);
+    float projected_y = vertex->position.y / (camera_distance * vertex->position.z);
+
+    vector2_t raster_point = point_to_screen(projected_x, projected_y, context->width, context->height);
+    vertex->raster_x = raster_point.x;
+    vertex->raster_y = raster_point.y;
+
+    return raster_point;
+}
+
 void rasterize(context_t *context)
 {
     for (int i = 0; i < context->triangles_array_size; i++)
@@ -115,9 +129,13 @@ void rasterize(context_t *context)
         update_vertex_position_with_camera(context, &triangle.b);
         update_vertex_position_with_camera(context, &triangle.c);
 
-        vector2_t vertex_a = point_to_screen(triangle.b.position.x, triangle.a.position.y, context->width, context->height);
-        vector2_t vertex_b = point_to_screen(triangle.b.position.x, triangle.b.position.y, context->width, context->height);
-        vector2_t vertex_c = point_to_screen(triangle.c.position.x, triangle.c.position.y, context->width, context->height);
+        //vector2_t vertex_a = point_to_screen(triangle.b.position.x, triangle.a.position.y, context->width, context->height);
+        //vector2_t vertex_b = point_to_screen(triangle.b.position.x, triangle.b.position.y, context->width, context->height);
+        //vector2_t vertex_c = point_to_screen(triangle.c.position.x, triangle.c.position.y, context->width, context->height);
+
+        vector2_t vertex_a = get_raster_value(context, &triangle.a);
+        vector2_t vertex_b = get_raster_value(context, &triangle.b);
+        vector2_t vertex_c = get_raster_value(context, &triangle.c);
 
         vector2_t P[3] = {vertex_a, vertex_b, vertex_c};
 
@@ -211,17 +229,3 @@ void rasterize(context_t *context)
         }
     }
 }
-
-/*
-static void get_raster_value(context_t *context, vertex_t *vertex)
-{
-    float fov = (60.0 / 2) * (3.1416 / 180);
-    float camera_distance = tan(fov);
-    float projected_x = vertex->position.x / (camera_distance * vertex->position.z);
-    float projected_y = vertex->position.y / (camera_distance * vertex->position.z);
-
-    vector2_t raster_point = point_to_screen(projected_x, projected_y, context->width, context->height);
-    vertex->raster_x = raster_point.x;
-    vertex->raster_y = raster_point.y;
-}
-*/
