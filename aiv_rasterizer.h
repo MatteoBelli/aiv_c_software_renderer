@@ -32,7 +32,9 @@ typedef struct context
 {
     int width;
     int height;
-    vector3_t camera;
+
+    vector3_t camera_position;
+    float camera_fov;
 
     unsigned char *framebuffer;
 

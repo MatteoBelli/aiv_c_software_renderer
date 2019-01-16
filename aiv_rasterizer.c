@@ -43,7 +43,8 @@ context_t context_new(int width, int height)
     context_t context;
     context.width = 600;
     context.height = 600;
-    context.camera = vector3_zero();
+    context.camera_position = vector3_zero();
+    context.camera_fov = 60;
     context.framebuffer = NULL;
     context.triangles = NULL;
     context.triangles_array_size = 0;
@@ -102,9 +103,9 @@ void rasterize(context_t *context)
     for (int i = 0; i < context->triangles_array_size; i++)
     {
         triangle_t triangle = context->triangles[i];
-        vector2_t vertex_a = point_to_screen(triangle.b.position.x - context->camera.x, triangle.a.position.y - context->camera.y, context->width, context->height);
-        vector2_t vertex_b = point_to_screen(triangle.b.position.x - context->camera.x, triangle.b.position.y - context->camera.y, context->width, context->height);
-        vector2_t vertex_c = point_to_screen(triangle.c.position.x - context->camera.x, triangle.c.position.y - context->camera.y, context->width, context->height);
+        vector2_t vertex_a = point_to_screen(triangle.b.position.x - context->camera_position.x, triangle.a.position.y - context->camera_position.y, context->width, context->height);
+        vector2_t vertex_b = point_to_screen(triangle.b.position.x - context->camera_position.x, triangle.b.position.y - context->camera_position.y, context->width, context->height);
+        vector2_t vertex_c = point_to_screen(triangle.c.position.x - context->camera_position.x, triangle.c.position.y - context->camera_position.y, context->width, context->height);
 
         vector2_t P[3] = {vertex_a, vertex_b, vertex_c};
 
