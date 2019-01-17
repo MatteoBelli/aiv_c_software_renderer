@@ -43,7 +43,7 @@ context_t context_new(int width, int height)
     context_t context;
     context.width = 600;
     context.height = 600;
-    context.camera_position = vector3_new(0, 0, 1);
+    context.camera_position = vector3_new(0, 0, -1);
     context.camera_fov = 60;
     context.framebuffer = NULL;
     context.triangles = NULL;

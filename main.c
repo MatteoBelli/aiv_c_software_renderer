@@ -29,7 +29,7 @@ int main(int argc, char const *argv[])
     if (!renderer)
         return -1;
 
-    SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, 600, 600);
+    SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, 600, 600);
     if (!texture)
         return -1;
 
@@ -53,9 +53,9 @@ int main(int argc, char const *argv[])
                     context.camera_position.x -= 0.1;
 
                 if (event.key.keysym.sym == SDLK_w)
-                    context.camera_position.z -= 0.1;
-                else if (event.key.keysym.sym == SDLK_s)
                     context.camera_position.z += 0.1;
+                else if (event.key.keysym.sym == SDLK_s)
+                    context.camera_position.z -= 0.1;
             }
         }
 
