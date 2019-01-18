@@ -105,7 +105,7 @@ static void update_vertex_view_position(context_t *context, vertex_t *vertex)
     vertex->view_position.z = vertex->position.z - context->camera_position.z;
 }
 
-static vector2_t get_raster_value(context_t *context, vertex_t *vertex)
+static void calculate_raster_value(context_t *context, vertex_t *vertex)
 {
     float fov = (60.0 / 2) * (3.1416 / 180);
     float camera_distance = tan(fov);
@@ -115,8 +115,6 @@ static vector2_t get_raster_value(context_t *context, vertex_t *vertex)
     vector2_t raster_point = point_to_screen(projected_x, projected_y, context->width, context->height);
     vertex->raster_x = raster_point.x;
     vertex->raster_y = raster_point.y;
-
-    return raster_point;
 }
 
 void rasterize(context_t *context)
@@ -129,26 +127,26 @@ void rasterize(context_t *context)
         update_vertex_view_position(context, &triangle.b);
         update_vertex_view_position(context, &triangle.c);
 
-        vector2_t vertex_a = get_raster_value(context, &triangle.a);
-        vector2_t vertex_b = get_raster_value(context, &triangle.b);
-        vector2_t vertex_c = get_raster_value(context, &triangle.c);
+        calculate_raster_value(context, &triangle.a);
+        calculate_raster_value(context, &triangle.b);
+        calculate_raster_value(context, &triangle.c);
 
-        vector2_t P[3] = {vertex_a, vertex_b, vertex_c};
+        vertex_t P[3] = {triangle.a, triangle.b, triangle.c};
 
-        vector2_t temp;
-        if (P[1].y < P[0].y)
+        vertex_t temp;
+        if (P[1].raster_y < P[0].raster_y)
         {
             temp = P[0];
             P[0] = P[1];
             P[1] = temp;
         }
-        if (P[2].y < P[1].y)
+        if (P[2].raster_y < P[1].raster_y)
         {
             temp = P[2];
             P[2] = P[1];
             P[1] = temp;
         }
-        if (P[1].y < P[0].y)
+        if (P[1].raster_y < P[0].raster_y)
         {
             temp = P[0];
             P[0] = P[1];
@@ -156,33 +154,33 @@ void rasterize(context_t *context)
         }
 
         float slope_P0_P2;
-        if (P[2].y == P[0].y)
+        if (P[2].raster_y == P[0].raster_y)
         {
             slope_P0_P2 = 1.0f;
         }
         else
         {
-            slope_P0_P2 = inversed_slope(P[0].x, P[2].x, P[0].y, P[2].y);
+            slope_P0_P2 = inversed_slope(P[0].raster_x, P[2].raster_x, P[0].raster_y, P[2].raster_y);
         }
 
         float slope_P0_P1;
-        if (P[1].y == P[0].y)
+        if (P[1].raster_y == P[0].raster_y)
         {
             slope_P0_P1 = 1.0f;
         }
         else
         {
-            slope_P0_P1 = inversed_slope(P[0].x, P[1].x, P[0].y, P[1].y);
+            slope_P0_P1 = inversed_slope(P[0].raster_x, P[1].raster_x, P[0].raster_y, P[1].raster_y);
         }
 
-        for (int y = P[0].y; y <= P[1].y; y++)
+        for (int y = P[0].raster_y; y <= P[1].raster_y; y++)
         {
 
-            float gradient_p0_p1 = gradient(y, P[0].y, P[1].y);
-            float start_x = lerp(P[0].x, P[1].x, gradient_p0_p1);
+            float gradient_p0_p1 = gradient(y, P[0].raster_y, P[1].raster_y);
+            float start_x = lerp(P[0].raster_x, P[1].raster_x, gradient_p0_p1);
 
-            float gradient_p0_p2 = gradient(y, P[0].y, P[2].y);
-            float end_x = lerp(P[0].x, P[2].x, gradient_p0_p2);
+            float gradient_p0_p2 = gradient(y, P[0].raster_y, P[2].raster_y);
+            float end_x = lerp(P[0].raster_x, P[2].raster_x, gradient_p0_p2);
 
             if (slope_P0_P1 <= slope_P0_P2)
             {
@@ -200,13 +198,13 @@ void rasterize(context_t *context)
             }
         }
 
-        for (int y = P[1].y; y <= P[2].y; y++)
+        for (int y = P[1].raster_y; y <= P[2].raster_y; y++)
         {
-            float gradient_p1_p2 = gradient(y, P[1].y, P[2].y);
-            float start_x = lerp(P[1].x, P[2].x, gradient_p1_p2);
+            float gradient_p1_p2 = gradient(y, P[1].raster_y, P[2].raster_y);
+            float start_x = lerp(P[1].raster_x, P[2].raster_x, gradient_p1_p2);
 
-            float gradient_p0_p2 = gradient(y, P[0].y, P[2].y);
-            float end_x = lerp(P[0].x, P[2].x, gradient_p0_p2);
+            float gradient_p0_p2 = gradient(y, P[0].raster_y, P[2].raster_y);
+            float end_x = lerp(P[0].raster_x, P[2].raster_x, gradient_p0_p2);
 
             if (slope_P0_P1 <= slope_P0_P2)
             {
