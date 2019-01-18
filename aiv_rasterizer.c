@@ -43,7 +43,7 @@ context_t context_new(int width, int height)
     context_t context;
     context.width = 600;
     context.height = 600;
-    context.camera_position = vector3_new(0, 0, -1);
+    context.camera_position = vector3_new(0, 0, -5);
     context.camera_fov = 60;
     context.framebuffer = NULL;
     context.triangles = NULL;
@@ -98,19 +98,19 @@ void draw_line(float start_y, float start_x, float end_x, float end_y, context_t
     }
 }
 
-static void update_vertex_position_with_camera(context_t *context, vertex_t *vertex)
+static void update_vertex_view_position(context_t *context, vertex_t *vertex)
 {
-    vertex->position.x = vertex->position.x - context->camera_position.x;
-    vertex->position.y = vertex->position.y - context->camera_position.y;
-    vertex->position.z = vertex->position.z - context->camera_position.z;
+    vertex->view_position.x = vertex->position.x - context->camera_position.x;
+    vertex->view_position.y = vertex->position.y - context->camera_position.y;
+    vertex->view_position.z = vertex->position.z - context->camera_position.z;
 }
 
 static vector2_t get_raster_value(context_t *context, vertex_t *vertex)
 {
     float fov = (60.0 / 2) * (3.1416 / 180);
     float camera_distance = tan(fov);
-    float projected_x = vertex->position.x / (camera_distance * vertex->position.z);
-    float projected_y = vertex->position.y / (camera_distance * vertex->position.z);
+    float projected_x = vertex->view_position.x / (camera_distance * vertex->view_position.z);
+    float projected_y = vertex->view_position.y / (camera_distance * vertex->view_position.z);
 
     vector2_t raster_point = point_to_screen(projected_x, projected_y, context->width, context->height);
     vertex->raster_x = raster_point.x;
@@ -125,13 +125,9 @@ void rasterize(context_t *context)
     {
         triangle_t triangle = context->triangles[i];
 
-        update_vertex_position_with_camera(context, &triangle.a);
-        update_vertex_position_with_camera(context, &triangle.b);
-        update_vertex_position_with_camera(context, &triangle.c);
-
-        //vector2_t vertex_a = point_to_screen(triangle.b.position.x, triangle.a.position.y, context->width, context->height);
-        //vector2_t vertex_b = point_to_screen(triangle.b.position.x, triangle.b.position.y, context->width, context->height);
-        //vector2_t vertex_c = point_to_screen(triangle.c.position.x, triangle.c.position.y, context->width, context->height);
+        update_vertex_view_position(context, &triangle.a);
+        update_vertex_view_position(context, &triangle.b);
+        update_vertex_view_position(context, &triangle.c);
 
         vector2_t vertex_a = get_raster_value(context, &triangle.a);
         vector2_t vertex_b = get_raster_value(context, &triangle.b);

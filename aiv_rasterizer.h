@@ -14,6 +14,7 @@ typedef struct color
 typedef struct vertex
 {
     struct vector3 position;
+    struct vector3 view_position;
     struct vector3 normal;
     struct color color;
 
